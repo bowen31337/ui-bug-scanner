@@ -1,0 +1,210 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build documentation site
+        run: |
+          mkdir -p _site
+          
+          # Copy documentation files
+          cp README.md _site/README.md
+          cp SKILL.md _site/SKILL.md
+          cp CHANGELOG.md _site/CHANGELOG.md 2>/dev/null || true
+          cp -r references _site/references 2>/dev/null || true
+          cp -r assets _site/assets 2>/dev/null || true
+          
+          # Create index.html with GitHub-style markdown rendering
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>UI Bug Scanner - Agent Skill</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+            <style>
+              body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                color: #24292e;
+                background-color: #fff;
+              }
+              .markdown-body {
+                background-color: transparent;
+                font-size: 16px;
+                line-height: 1.5;
+                word-wrap: break-word;
+              }
+              .header {
+                text-align: center;
+                margin-bottom: 3em;
+                padding-bottom: 2em;
+                border-bottom: 1px solid #eaecef;
+              }
+              .header h1 {
+                font-size: 2.5em;
+                margin-bottom: 0.5em;
+              }
+              .nav {
+                margin: 2em 0;
+                padding: 1.5em;
+                background: #f6f8fa;
+                border-radius: 6px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1em;
+              }
+              .nav a {
+                color: #0366d6;
+                text-decoration: none;
+                font-weight: 500;
+                padding: 0.5em 1em;
+                border-radius: 4px;
+                transition: background-color 0.2s;
+              }
+              .nav a:hover {
+                background-color: #e1e4e8;
+              }
+              .badges {
+                margin: 1em 0;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5em;
+                justify-content: center;
+              }
+              .footer {
+                margin-top: 3em;
+                padding-top: 2em;
+                border-top: 1px solid #eaecef;
+                text-align: center;
+                color: #6a737d;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🔍 UI Bug Scanner</h1>
+              <p style="font-size: 1.2em; color: #6a737d;">Agent Skill for Website Accessibility & Usability Scanning</p>
+              <div class="badges">
+                <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+                <img src="https://img.shields.io/badge/TypeScript-5.3-blue.svg" alt="TypeScript">
+                <img src="https://img.shields.io/badge/Playwright-1.40-green.svg" alt="Playwright">
+                <img src="https://img.shields.io/badge/axe--core-4.8-orange.svg" alt="axe-core">
+              </div>
+            </div>
+            
+            <div class="nav">
+              <a href="README.md">📖 Documentation</a>
+              <a href="SKILL.md">🎯 Skill Definition</a>
+              <a href="CHANGELOG.md">📝 Changelog</a>
+              <a href="https://github.com/${{ github.repository }}">🔗 GitHub Repository</a>
+              <a href="https://github.com/${{ github.repository }}/releases">📦 Releases</a>
+            </div>
+            
+            <article class="markdown-body">
+              <h2>Welcome</h2>
+              <p>UI Bug Scanner is a comprehensive <strong>Agent Skill</strong> that scans websites for:</p>
+              <ul>
+                <li>♿ <strong>Accessibility issues</strong> - WCAG 2.1/2.2 Level AA compliance checking</li>
+                <li>🖱️ <strong>Usability problems</strong> - Tap targets, focus traps, overlapping elements</li>
+                <li>📐 <strong>Custom UI spec violations</strong> - Design system rules validation</li>
+              </ul>
+              
+              <h2>Quick Start</h2>
+              <pre><code class="language-bash">npm install
+npx playwright install chromium
+npx ts-node scripts/scanner.ts --url https://example.com</code></pre>
+              
+              <h2>Features</h2>
+              <ul>
+                <li>🔍 <strong>Accessibility Scanning</strong> - WCAG 2.1/2.2 Level AA compliance using axe-core</li>
+                <li>🖱️ <strong>Usability Checks</strong> - Tap targets, overlaps, focus traps, modal behavior</li>
+                <li>📐 <strong>Custom Spec Validation</strong> - Team-defined design system rules via JSON DSL</li>
+                <li>🌐 <strong>Multi-Viewport Testing</strong> - Desktop, tablet, and mobile viewports</li>
+                <li>🕷️ <strong>Smart Crawling</strong> - Sitemap, BFS, or journey-based page discovery</li>
+                <li>🔐 <strong>Authentication Support</strong> - Cookies, headers, or scripted login flows</li>
+                <li>📊 <strong>Multiple Report Formats</strong> - Markdown, JSON, and SARIF (CI-ready)</li>
+                <li>🎯 <strong>Finding Deduplication</strong> - Clusters similar issues across pages</li>
+                <li>📸 <strong>Evidence Capture</strong> - Screenshots, DOM snippets, accessibility trees</li>
+              </ul>
+              
+              <h2>Documentation</h2>
+              <p>📖 See <a href="README.md">README.md</a> for full documentation and usage examples.</p>
+              <p>🎯 See <a href="SKILL.md">SKILL.md</a> for the Agent Skill definition and detailed instructions.</p>
+              <p>📝 See <a href="CHANGELOG.md">CHANGELOG.md</a> for version history and changes.</p>
+              
+              <h2>Installation</h2>
+              <pre><code class="language-bash">git clone https://github.com/${{ github.repository }}.git
+cd ui-bug-scanner
+npm install
+npx playwright install chromium</code></pre>
+              
+              <h2>Usage Example</h2>
+              <pre><code class="language-bash"># Single URL scan
+npx ts-node scripts/scanner.ts --url https://example.com
+
+# Multi-viewport with sitemap crawl
+npx ts-node scripts/scanner.ts \\
+  --url https://example.com \\
+  --crawl-mode sitemap \\
+  --viewport desktop,mobile \\
+  --output ./reports</code></pre>
+              
+              <h2>Contributing</h2>
+              <p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+              
+              <h2>License</h2>
+              <p>This project is licensed under the MIT License.</p>
+            </article>
+            
+            <div class="footer">
+              <p>Made with ❤️ for accessible web experiences</p>
+              <p><a href="https://github.com/${{ github.repository }}">View on GitHub</a></p>
+            </div>
+            
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
