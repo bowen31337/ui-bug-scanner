@@ -1,0 +1,51 @@
+{
+  "name": "ui-bug-scanner",
+  "version": "1.0.0",
+  "description": "Website UI Bug Scanner Agent Skill - Scans for accessibility, usability, and custom spec violations",
+  "main": "scripts/scanner.ts",
+  "bin": {
+    "ui-bug-scanner": "./scripts/scanner.ts"
+  },
+  "scripts": {
+    "scan": "npx ts-node scripts/scanner.ts",
+    "build": "tsc",
+    "lint": "eslint scripts/**/*.ts",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "usability",
+    "ui-testing",
+    "web-scanner",
+    "agent-skill"
+  ],
+  "author": "Agent Skills",
+  "license": "MIT",
+  "dependencies": {
+    "@axe-core/playwright": "^4.8.0",
+    "playwright": "^1.40.0",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/xml2js": "^0.4.14",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.2",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.55.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "ts-jest": "^29.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentskills/ui-bug-scanner"
+  }
+}

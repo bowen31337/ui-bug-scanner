@@ -1,0 +1,197 @@
+{
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "icon-button-accessible-name",
+      "type": "accessibility-spec",
+      "selector": "button.icon-only, [role='button'].icon-only, button:not(:has(*)):empty",
+      "assert": {
+        "accessibleName": { "minLength": 1 }
+      },
+      "severity": "high",
+      "message": "Icon-only buttons must have an accessible name (aria-label or aria-labelledby)",
+      "suggestedFix": "Add aria-label='descriptive text' to the button element",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html",
+        "https://www.w3.org/WAI/ARIA/apg/patterns/button/"
+      ]
+    },
+    {
+      "id": "min-tap-target-mobile",
+      "type": "usability-spec",
+      "selector": "button, a, input, select, textarea, [role='button'], [role='link'], [onclick]",
+      "when": { "viewport": "mobile" },
+      "assert": {
+        "boundingBox": { "minWidthPx": 44, "minHeightPx": 44 }
+      },
+      "severity": "medium",
+      "message": "Interactive controls must be at least 44x44 px on mobile for easy tapping",
+      "suggestedFix": "Increase the element's clickable area using min-width, min-height, or padding",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Understanding/target-size.html"
+      ]
+    },
+    {
+      "id": "approved-text-colors",
+      "type": "ui-token-spec",
+      "selector": "p, span, li, label, h1, h2, h3, h4, h5, h6",
+      "assert": {
+        "computedStyle": {
+          "property": "color",
+          "in": [
+            "rgb(17, 24, 39)",
+            "rgb(31, 41, 55)",
+            "rgb(55, 65, 81)",
+            "rgb(75, 85, 99)",
+            "rgb(107, 114, 128)",
+            "rgb(156, 163, 175)",
+            "rgb(255, 255, 255)"
+          ]
+        }
+      },
+      "severity": "low",
+      "message": "Text color must use approved palette tokens (gray-900 to gray-400 or white)",
+      "suggestedFix": "Use a color from the approved design system palette"
+    },
+    {
+      "id": "primary-button-min-size",
+      "type": "usability-spec",
+      "selector": "button.primary, button[class*='primary'], .btn-primary",
+      "assert": {
+        "boundingBox": { "minWidthPx": 120, "minHeightPx": 40 }
+      },
+      "severity": "medium",
+      "message": "Primary buttons should be at least 120x40 px for prominence",
+      "suggestedFix": "Increase button size or padding to meet minimum dimensions"
+    },
+    {
+      "id": "link-has-href",
+      "type": "accessibility-spec",
+      "selector": "a",
+      "assert": {
+        "attribute": { "name": "href", "exists": true }
+      },
+      "severity": "medium",
+      "message": "Links must have an href attribute",
+      "suggestedFix": "Add href attribute to the link, or convert to a button if it triggers an action",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Techniques/failures/F89"
+      ]
+    },
+    {
+      "id": "img-has-alt",
+      "type": "accessibility-spec",
+      "selector": "img",
+      "assert": {
+        "attribute": { "name": "alt", "exists": true }
+      },
+      "severity": "high",
+      "message": "Images must have alt attribute (can be empty for decorative images)",
+      "suggestedFix": "Add alt='' for decorative images or descriptive alt text for informative images",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+      ]
+    },
+    {
+      "id": "form-input-has-label",
+      "type": "accessibility-spec",
+      "selector": "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset'])",
+      "assert": {
+        "accessibleName": { "minLength": 1 }
+      },
+      "severity": "high",
+      "message": "Form inputs must have an accessible label",
+      "suggestedFix": "Add a <label for='inputId'> element or aria-label attribute",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html"
+      ]
+    },
+    {
+      "id": "modal-has-aria-modal",
+      "type": "accessibility-spec",
+      "selector": "[role='dialog']",
+      "assert": {
+        "attribute": { "name": "aria-modal", "value": "true" }
+      },
+      "severity": "medium",
+      "message": "Dialog elements should have aria-modal='true' to properly trap focus",
+      "suggestedFix": "Add aria-modal='true' to the dialog element",
+      "references": [
+        "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+      ]
+    },
+    {
+      "id": "button-has-type",
+      "type": "accessibility-spec",
+      "selector": "button:not([type])",
+      "assert": {
+        "attribute": { "name": "type", "exists": true }
+      },
+      "severity": "low",
+      "message": "Buttons should have explicit type attribute (button, submit, or reset)",
+      "suggestedFix": "Add type='button' for non-submit buttons, type='submit' for form submission"
+    },
+    {
+      "id": "heading-not-empty",
+      "type": "accessibility-spec",
+      "selector": "h1, h2, h3, h4, h5, h6",
+      "assert": {
+        "accessibleName": { "minLength": 1 }
+      },
+      "severity": "medium",
+      "message": "Heading elements must have text content",
+      "suggestedFix": "Add meaningful text content to the heading element",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Understanding/headings-and-labels.html"
+      ]
+    },
+    {
+      "id": "nav-has-label",
+      "type": "accessibility-spec",
+      "selector": "nav",
+      "assert": {
+        "accessibleName": { "minLength": 1 }
+      },
+      "severity": "low",
+      "message": "Navigation landmarks should have aria-label if there are multiple navs",
+      "suggestedFix": "Add aria-label='Main navigation' or similar descriptive label"
+    },
+    {
+      "id": "skip-link-visible-on-focus",
+      "type": "usability-spec",
+      "selector": "a[href='#main'], a[href='#content'], .skip-link",
+      "assert": {
+        "focusable": true
+      },
+      "severity": "medium",
+      "message": "Skip links should be focusable and become visible on focus",
+      "suggestedFix": "Ensure skip link is in tab order and shows on :focus",
+      "references": [
+        "https://www.w3.org/WAI/WCAG21/Techniques/general/G1"
+      ]
+    },
+    {
+      "id": "video-has-controls",
+      "type": "accessibility-spec",
+      "selector": "video",
+      "assert": {
+        "attribute": { "name": "controls", "exists": true }
+      },
+      "severity": "medium",
+      "message": "Video elements should have controls for pause/play",
+      "suggestedFix": "Add controls attribute to the video element"
+    },
+    {
+      "id": "no-autoplaying-video",
+      "type": "usability-spec",
+      "selector": "video[autoplay]",
+      "when": { "hasAttribute": "autoplay" },
+      "assert": {
+        "attribute": { "name": "muted", "exists": true }
+      },
+      "severity": "medium",
+      "message": "Autoplaying videos should be muted by default",
+      "suggestedFix": "Add muted attribute to autoplaying videos"
+    }
+  ]
+}

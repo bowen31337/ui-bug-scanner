@@ -1,0 +1,211 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Build TypeScript
+        run: npm run build || echo "Build step skipped (no build script)"
+
+      - name: Create release archive
+        run: |
+          mkdir -p release
+          cp -r scripts release/
+          cp -r assets release/ 2>/dev/null || true
+          cp -r references release/ 2>/dev/null || true
+          cp SKILL.md release/ 2>/dev/null || true
+          cp README.md release/ 2>/dev/null || true
+          cp package.json release/ 2>/dev/null || true
+          cp tsconfig.json release/ 2>/dev/null || true
+          tar -czf release.tar.gz -C release .
+          zip -r release.zip release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Release ${{ steps.version.outputs.version }}
+
+            ### 📦 Installation
+
+            ```bash
+            npm install
+            npx playwright install chromium
+            ```
+
+            ### 🚀 Quick Start
+
+            ```bash
+            npx ts-node scripts/scanner.ts --url https://example.com
+            ```
+
+            ### 📚 Documentation
+
+            See [README.md](README.md) for full documentation.
+
+            ### 📝 Changes
+
+            See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+
+            ---
+
+            **Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.before }}...${{ steps.version.outputs.tag }}
+          files: |
+            release.tar.gz
+            release.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build documentation site
+        run: |
+          mkdir -p _site
+          cp README.md _site/index.md
+          cp SKILL.md _site/SKILL.md
+          cp -r references _site/references 2>/dev/null || true
+          cp -r assets _site/assets 2>/dev/null || true
+          
+          # Convert markdown to HTML (basic)
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>UI Bug Scanner - Agent Skill</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+            <style>
+              body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; }
+              .markdown-body { background-color: transparent; }
+            </style>
+          </head>
+          <body>
+            <article class="markdown-body">
+              $(cat _site/index.md | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | awk '{gsub(/\[([^\]]+)\]\(([^\)]+)\)/, "<a href=\"\\2\">\\1</a>"); print}')
+            </article>
+          </body>
+          </html>
+          EOF
+          
+          # Use a simple markdown converter or just copy files
+          # For now, we'll use a GitHub Pages compatible structure
+          rm -rf _site
+          mkdir -p _site
+          cp README.md _site/README.md
+          cp SKILL.md _site/SKILL.md
+          cp -r references _site/references 2>/dev/null || true
+          cp -r assets _site/assets 2>/dev/null || true
+          
+          # Create a simple index page
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>UI Bug Scanner - Agent Skill</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+            <style>
+              body { 
+                box-sizing: border-box; 
+                min-width: 200px; 
+                max-width: 980px; 
+                margin: 0 auto; 
+                padding: 45px; 
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+              }
+              .markdown-body { background-color: transparent; }
+              .header { text-align: center; margin-bottom: 2em; }
+              .nav { margin: 2em 0; padding: 1em; background: #f6f8fa; border-radius: 6px; }
+              .nav a { margin-right: 1em; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🔍 UI Bug Scanner</h1>
+              <p>Agent Skill for Website Accessibility & Usability Scanning</p>
+            </div>
+            <div class="nav">
+              <a href="README.md">📖 Documentation</a>
+              <a href="SKILL.md">🎯 Skill Definition</a>
+              <a href="https://github.com/${{ github.repository }}">🔗 GitHub</a>
+            </div>
+            <article class="markdown-body">
+              <h2>Welcome</h2>
+              <p>UI Bug Scanner is a comprehensive Agent Skill that scans websites for:</p>
+              <ul>
+                <li>♿ <strong>Accessibility issues</strong> (WCAG 2.x AA compliance)</li>
+                <li>🖱️ <strong>Usability problems</strong> (tap targets, focus traps, overlaps)</li>
+                <li>📐 <strong>Custom UI spec violations</strong> (design system rules)</li>
+              </ul>
+              <h2>Quick Start</h2>
+              <pre><code>npm install
+npx playwright install chromium
+npx ts-node scripts/scanner.ts --url https://example.com</code></pre>
+              <h2>Documentation</h2>
+              <p>See <a href="README.md">README.md</a> for full documentation and usage examples.</p>
+              <p>See <a href="SKILL.md">SKILL.md</a> for the Agent Skill definition.</p>
+            </article>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
